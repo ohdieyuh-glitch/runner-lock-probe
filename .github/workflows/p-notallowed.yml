@@ -1,0 +1,8 @@
+name: p-notallowed
+on: workflow_dispatch
+permissions: {}
+jobs:
+  sneak:
+    runs-on: probe-paid
+    steps:
+      - run: echo "A4 FAIL - this job should have been refused by the hook"

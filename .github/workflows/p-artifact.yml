@@ -1,0 +1,17 @@
+name: p-artifact
+on: workflow_dispatch
+permissions: {}
+jobs:
+  up:
+    runs-on: probe-paid
+    steps:
+      - run: mkdir -p out && echo "probe-artifact-$GITHUB_RUN_ID" > out/a.txt && sha256sum out/a.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: { name: probe-artifact, path: out, retention-days: 1 }
+  down:
+    needs: up
+    runs-on: probe-paid
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: { name: probe-artifact, path: got }
+      - run: test "$(cat got/a.txt)" = "probe-artifact-$GITHUB_RUN_ID" && echo "A1 round-trip OK"

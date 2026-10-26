@@ -1,0 +1,10 @@
+name: p-env
+on: workflow_dispatch
+permissions: {}
+jobs:
+  env:
+    runs-on: ${{ github.ref == 'refs/heads/main' && 'probe-paid' || 'probe-ci' }}
+    environment: probe-env
+    steps:
+      - env: { S: "${{ secrets.PROBE_SECRET }}" }
+        run: 'if [ -n "$S" ]; then echo "A3 secret delivered: length ${#S}, sha256 prefix $(printf %s "$S" | sha256sum | cut -c1-8)"; else echo "A3 secret EMPTY"; exit 1; fi'

@@ -1,0 +1,16 @@
+name: p-write
+on: workflow_dispatch
+permissions: { contents: write, statuses: write }
+jobs:
+  write:
+    runs-on: probe-paid
+    steps:
+      - env: { GH_TOKEN: "${{ github.token }}", R: "${{ github.repository }}", SHA: "${{ github.sha }}" }
+        run: |
+          set -euo pipefail
+          api() { curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$@"; }
+          tag="probe-run-spent-$GITHUB_RUN_ID"
+          obj=$(api -X POST "https://api.github.com/repos/$R/git/tags" -d "{\"tag\":\"$tag\",\"message\":\"probe.v1\nrun=$GITHUB_RUN_ID\n\",\"object\":\"$SHA\",\"type\":\"commit\"}" | sed -n 's/.*"sha": *"\([0-9a-f]\{40\}\)".*/\1/p' | head -1)
+          test -n "$obj"
+          api -X POST "https://api.github.com/repos/$R/git/refs" -d "{\"ref\":\"refs/tags/$tag\",\"sha\":\"$obj\"}" | grep -q "\"ref\": *\"refs/tags/$tag\"" && echo "A2 tag created via job token"
+          api -X POST "https://api.github.com/repos/$R/statuses/$SHA" -d "{\"state\":\"success\",\"context\":\"julius-live-progress\",\"description\":\"probe r$GITHUB_RUN_ID\"}" | grep -q '"login": *"github-actions\[bot\]"' && echo "A2 status created by github-actions[bot]"
