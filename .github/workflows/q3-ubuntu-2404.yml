@@ -1,0 +1,8 @@
+name: q3-ubuntu-2404
+on: workflow_dispatch
+permissions: {}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Q3 ran on $RUNNER_NAME ($RUNNER_ENVIRONMENT)"
